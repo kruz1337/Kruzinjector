@@ -10,7 +10,7 @@ This repository has a [Dynamic-link library (DLL)](https://en.wikipedia.org/wiki
 - Debug & Release.
 
 ## How to build Kruzinjector Project files?
-* First of all you should download project files on project page or clone this repository from GitBash or GitHub Desktop on your PC. [Kruzinjector.zip](https://github.com/Kruziikrel1/Kruzinjector)
+* First of all you should download project files on project page or clone this repository from GitBash or GitHub Desktop on your PC. [Kruzinjector.zip](https://github.com/Kruziikrel1/Kruzinjector/releases/tag/v1.0)
 
 * If you download project files with manual method you need extract zip file.
 
