@@ -7,7 +7,7 @@ This repository has a injector project. It's fully open source, all process arch
 
 
 - Supports x64 and x86 architery.
-- Release & Debug.
+- Debug & Release.
 
 ## How to build Kruzinjector Project files?
 * First of all you should download project files on project page or clone this repository from GitBash or GitHub Desktop on your PC. [Kruzinjector.zip](https://github.com/Kruziikrel1/Kruzinjector)
