@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\ManualMap">
+      <UniqueIdentifier>{4b850bcc-2e2b-4d6e-b97c-53d6a9fb635c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Standart">
+      <UniqueIdentifier>{407d2a6f-e975-4293-9950-6047ad4ceba3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Bypass">
+      <UniqueIdentifier>{df90de97-9ca6-4a81-b15d-34d52741e5f9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="appmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Standart.cpp">
+      <Filter>Header Files\Standart</Filter>
+    </ClCompile>
+    <ClCompile Include="Bypass.cpp">
+      <Filter>Header Files\Bypass</Filter>
+    </ClCompile>
+    <ClCompile Include="ManualMap.cpp">
+      <Filter>Header Files\ManualMap</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ManualMap.h">
+      <Filter>Header Files\ManualMap</Filter>
+    </ClInclude>
+    <ClInclude Include="Standart.h">
+      <Filter>Header Files\Standart</Filter>
+    </ClInclude>
+    <ClInclude Include="Bypass.h">
+      <Filter>Header Files\Bypass</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Kruzinjector.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\..\..\Desktop\icon copy.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\..\..\Desktop\icon copy.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+</Project>
