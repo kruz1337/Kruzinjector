@@ -275,6 +275,8 @@ int main()
 	std::string advancedOptions;
 	int injectType = 1;
 
+	SetConsoleTitle("DLL INJECTOR | Kruzinjector v1.0");
+
 	createAscii();
 
 	std::ifstream xmlFile("settings.xml");
