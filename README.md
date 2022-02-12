@@ -2,6 +2,8 @@
 This repository has a injector project. It's fully open source, all process architery compatible project and has a VAC Bypass injection to Counter-Strike: Global Offensive.
 ![Image of RequestX International Developer Group on Discord](https://github.com/Kruziikrel1/Kruzinjector/blob/main/thumbnail.png)
 
+Supports x64 and x86 architery.
+
 ## How to build Kruzinjector Project files?
 * First of all you should download project files on project page or clone this repository from GitBash or GitHub Desktop on your PC. [Kruzinjector.zip](https://github.com/Kruziikrel1/Kruzinjector)
 
@@ -21,5 +23,3 @@ This repository has a injector project. It's fully open source, all process arch
 * Configurate "AutoInject" settings.
 
 * That's all, enjoy it :)
-
-## 
