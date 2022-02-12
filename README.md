@@ -1,7 +1,7 @@
 # Kruzinjector
 This repository has a injector project. It's fully open source, all process architery compatible project and has a VAC Bypass injection to Counter-Strike: Global Offensive.
 
-![](https://img.shields.io/badge/language-c++-e76089?style=plastic) ![](https://img.shields.io/badge/license-GNU-green?style=plastic) ![](https://img.shields.io/badge/arch-x86%20%7C%20x64-d9654f?style=plastic) ![](https://img.shields.io/badge/config-Debug%20%7C%20Release-c0c0c0?style=plastic)
+![](https://img.shields.io/badge/language-c++-e76089?style=plastic) ![](https://img.shields.io/badge/license-GNU-green?style=plastic) ![](https://img.shields.io/badge/arch-x64%20%7C%20x86-d9654f?style=plastic) ![](https://img.shields.io/badge/config-Debug%20%7C%20Release-c0c0c0?style=plastic)
 
 ![Image of RequestX International Developer Group on Discord](https://github.com/Kruziikrel1/Kruzinjector/blob/main/thumbnail.png)
 
