@@ -1,0 +1,3 @@
+[submodule "Kruzinjector/rapidxml"]
+	path = Kruzinjector/rapidxml
+	url = https://github.com/discord/rapidxml.git
