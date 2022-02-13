@@ -5,7 +5,7 @@
 #include "Bypass.h"
 #include <string>
 #include <sstream>
-#include "xmlparser/rapidxml.hpp"
+#include "rapidxml/rapidxml.hpp"
 
 #ifdef _WIN64
 #define MACHINE_ARC IMAGE_FILE_MACHINE_AMD64
