@@ -20,6 +20,8 @@ This repository has a [Dynamic-link library (DLL)](https://en.wikipedia.org/wiki
 
 * Check out bin folder include that.
 
+<br/>
+
 ## How to enable Auto Injection?
 * First open settings.xml file with notepad.
 
