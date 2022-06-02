@@ -3,14 +3,14 @@ This repository has a [Dynamic-link library (DLL)](https://en.wikipedia.org/wiki
 
 ![](https://img.shields.io/badge/language-c++-e76089?style=plastic) ![](https://img.shields.io/badge/license-GNU-green?style=plastic) ![](https://img.shields.io/badge/arch-x64%20%7C%20x86-d9654f?style=plastic) ![](https://img.shields.io/badge/config-Debug%20%7C%20Release-c0c0c0?style=plastic)
 
-![Image of RequestX International Developer Group on Discord](https://github.com/Kruziikrel1/Kruzinjector/blob/main/thumbnail.png)
+![Image of RequestX International Developer Group on Discord](https://github.com/kruz1337/Kruzinjector/blob/main/thumbnail.png)
 
 
 - Supports x64 and x86 architery.
 - Debug & Release.
 
 ## How to build Kruzinjector Project files?
-* First of all you should download project files on project page or clone this repository from GitBash or GitHub Desktop on your PC. [Kruzinjector.zip](https://github.com/Kruziikrel1/Kruzinjector/releases)
+* First of all you should download project files on project page or clone this repository from GitBash or GitHub Desktop on your PC. [Kruzinjector.zip](https://github.com/kruz1337/Kruzinjector/releases)
 
 * If you download project files with manual method you need extract zip file.
 
