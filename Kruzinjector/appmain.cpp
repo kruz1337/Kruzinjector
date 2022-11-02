@@ -162,18 +162,18 @@ bool StartInject(int injectType, const char* injectName, const char* dllFile)
 	if (!sourceData) {
 		printf("[!] Dll file can't allocate.\n");
 		Dll.close();
-		return -7;
-	}
-
-	if (reinterpret_cast<IMAGE_DOS_HEADER*>(sourceData)->e_magic != 0x5A4D) /* Checks MZ */
-	{
-		printf("[!] Invalid dll file.\n");
 		return false;
 	}
 
 	Dll.seekg(0, std::ios::beg);
 	Dll.read(reinterpret_cast<char*>(sourceData), dllSize);
 	Dll.close();
+
+	if (reinterpret_cast<IMAGE_DOS_HEADER*>(sourceData)->e_magic != 0x5A4D) /* Checks MZ */
+	{
+		printf("[!] Invalid dll file.\n");
+		return false;
+	}
 
 	IMAGE_FILE_HEADER* fileHeader = nullptr;
 	fileHeader = &reinterpret_cast<IMAGE_NT_HEADERS*>(sourceData + reinterpret_cast<IMAGE_DOS_HEADER*>(sourceData)->e_lfanew)->FileHeader;
