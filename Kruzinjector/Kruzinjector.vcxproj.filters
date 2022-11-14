@@ -13,41 +13,44 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\ManualMap">
-      <UniqueIdentifier>{4b850bcc-2e2b-4d6e-b97c-53d6a9fb635c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Standart">
-      <UniqueIdentifier>{407d2a6f-e975-4293-9950-6047ad4ceba3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Bypass">
-      <UniqueIdentifier>{df90de97-9ca6-4a81-b15d-34d52741e5f9}</UniqueIdentifier>
+    <Filter Include="Header Files\Resources">
+      <UniqueIdentifier>{1f2e0c8a-ee0e-4a5c-b3e4-2c09ffbf73a6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="appmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Standart.cpp">
-      <Filter>Header Files\Standart</Filter>
-    </ClCompile>
-    <ClCompile Include="Bypass.cpp">
-      <Filter>Header Files\Bypass</Filter>
+    <ClCompile Include="LoadLibrary.cpp">
+      <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="ManualMap.cpp">
-      <Filter>Header Files\ManualMap</Filter>
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Execution.cpp">
+      <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="LoadLibrary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="ManualMap.h">
-      <Filter>Header Files\ManualMap</Filter>
-    </ClInclude>
-    <ClInclude Include="Standart.h">
-      <Filter>Header Files\Standart</Filter>
-    </ClInclude>
-    <ClInclude Include="Bypass.h">
-      <Filter>Header Files\Bypass</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
+      <Filter>Header Files\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Execution.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

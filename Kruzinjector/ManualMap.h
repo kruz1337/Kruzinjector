@@ -1,9 +1,5 @@
 #pragma once
-
-#include <Windows.h>
-#include <iostream>
-#include <fstream>
-#include <TlHelp32.h>
+#include "Includes.h"
 
 using _LoadLibraryA = HINSTANCE(WINAPI*)(const char* libFileName);
 using _GetProcAddress = UINT_PTR(WINAPI*)(HMODULE hModule, const char* processName);
@@ -16,5 +12,5 @@ struct MANUAL_MAPPING_STRUCT
 	HINSTANCE hMain;
 };
 
-bool ManualMap(HANDLE hProcess, BYTE* sourceData, SIZE_T dllSize);
+bool IManualMap(HANDLE hProcess, BYTE* sourceData, SIZE_T dllSize, EXECUTION_METHOD execution);
 void __stdcall ShellCode(MANUAL_MAPPING_STRUCT* data);

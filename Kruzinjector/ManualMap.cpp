@@ -1,19 +1,7 @@
 #include "ManualMap.h"
+#include "Execution.h"
 
-/* ---------------------------- */
-#define FLAG32(RelInfo) ((RelInfo >> 0x0C) == IMAGE_REL_BASED_HIGHLOW)
-#define FLAG64(RelInfo) ((RelInfo >> 0x0C) == IMAGE_REL_BASED_DIR64)
-
-#ifdef _WIN64
-#define RELOC_FLAG FLAG64
-#define MACHINE_ARC IMAGE_FILE_MACHINE_AMD64
-#else
-#define RELOC_FLAG FLAG32
-#define MACHINE_ARC IMAGE_FILE_MACHINE_I386
-#endif
-/* ---------------------------- */
-
-bool ManualMap(HANDLE hProcess, BYTE* sourceData, SIZE_T dllSize)
+bool IManualMap(HANDLE hProcess, BYTE* sourceData, SIZE_T dllSize, EXECUTION_METHOD execution)
 {
 	BYTE* targetBase = nullptr;
 	IMAGE_NT_HEADERS* ntHeaders = nullptr;
@@ -24,13 +12,13 @@ bool ManualMap(HANDLE hProcess, BYTE* sourceData, SIZE_T dllSize)
 	optHeader = &ntHeaders->OptionalHeader;
 	fileHeader = &ntHeaders->FileHeader;
 	targetBase = reinterpret_cast<BYTE*>(VirtualAllocEx(hProcess, reinterpret_cast<void*>(optHeader->ImageBase), optHeader->SizeOfImage, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE));
-	
+
 	if (!targetBase)
 	{
 		targetBase = reinterpret_cast<BYTE*>(VirtualAllocEx(hProcess, nullptr, optHeader->SizeOfImage, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE));
 		if (!targetBase)
 		{
-			printf("[!] Memory failed to AllocateEx. (0x%X)\n", GetLastError());
+			printf("[-] Memory failed to AllocateEx. (0x%X)\n", GetLastError());
 			return false;
 		}
 	}
@@ -39,9 +27,9 @@ bool ManualMap(HANDLE hProcess, BYTE* sourceData, SIZE_T dllSize)
 	data.pLoadLibraryA = LoadLibraryA;
 	data.pGetProcAddress = reinterpret_cast<_GetProcAddress>(GetProcAddress);
 
-	if (!WriteProcessMemory(hProcess, targetBase, sourceData, 0x1000, nullptr)) 
+	if (!WriteProcessMemory(hProcess, targetBase, sourceData, 0x1000, nullptr))
 	{
-		printf("[!] Can't write file header 0x%X\n", GetLastError());
+		printf("[-] Can't write file header 0x%X\n", GetLastError());
 		VirtualFreeEx(hProcess, targetBase, 0, MEM_RELEASE);
 		return false;
 	}
@@ -53,46 +41,45 @@ bool ManualMap(HANDLE hProcess, BYTE* sourceData, SIZE_T dllSize)
 		{
 			if (!WriteProcessMemory(hProcess, targetBase + sectionheader->VirtualAddress, sourceData + sectionheader->PointerToRawData, sectionheader->SizeOfRawData, nullptr))
 			{
-				printf("[!] Can't map sections. (0x%X)\n", GetLastError());
+				printf("[-] Can't map sections. (0x%X)\n", GetLastError());
 				VirtualFreeEx(hProcess, targetBase, 0, MEM_RELEASE);
 				return false;
 			}
 		}
 	}
 
-	memcpy(sourceData, &data, sizeof(data));
 	if (!WriteProcessMemory(hProcess, targetBase, sourceData, 0x1000, nullptr))
 	{
-		printf("[!] Failed to write process memory. (0x%X)\n", GetLastError());
+		printf("[-] Failed to write process memory. (0x%X)\n", GetLastError());
 		VirtualFreeEx(hProcess, targetBase, 0, MEM_RELEASE);
 		return false;
 	}
+	WriteProcessMemory(hProcess, targetBase, &data, sizeof(data), nullptr);
 
 	void* shellCode = VirtualAllocEx(hProcess, nullptr, 0x1000, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	if (!shellCode)
 	{
-		printf("[!] Memory failed to AllocateEx. (0x%X)\n", GetLastError());
+		printf("[-] Shellcode allocation failed. (0x%X)\n", GetLastError());
 		VirtualFreeEx(hProcess, targetBase, 0, MEM_RELEASE);
 		return false;
 	}
 
-	if (!WriteProcessMemory(hProcess, shellCode, ShellCode, 0x1000, nullptr)) 
+	if (!WriteProcessMemory(hProcess, shellCode, ShellCode, 0x1000, nullptr))
 	{
-		printf("[!] Failed to write shellcode 0x%X\n", GetLastError());
+		printf("[-] Failed to write shellcode (0x%X)\n", GetLastError());
 		VirtualFreeEx(hProcess, targetBase, 0, MEM_RELEASE);
 		VirtualFreeEx(hProcess, shellCode, 0, MEM_RELEASE);
 		return false;
 	}
 
-	HANDLE thread = CreateRemoteThread(hProcess, nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(shellCode), targetBase, 0, nullptr);
-	if (!thread)
+	if (execution == M_NtCreateThreadEx)
 	{
-		printf("[!] Failed to create thread. (0x%X)\n", GetLastError());
-		VirtualFreeEx(hProcess, targetBase, 0, MEM_RELEASE);
-		VirtualFreeEx(hProcess, shellCode, 0, MEM_RELEASE);
-		return false;
+		CreateThreadEx(hProcess, shellCode, targetBase);
 	}
-	CloseHandle(thread);
+	else if (execution == M_ThreadHijacking)
+	{
+		HijackThread(hProcess, shellCode, targetBase);
+	}
 
 	HINSTANCE hCheck = NULL;
 	while (!hCheck)
@@ -102,7 +89,7 @@ bool ManualMap(HANDLE hProcess, BYTE* sourceData, SIZE_T dllSize)
 
 		if (exitcode != STILL_ACTIVE)
 		{
-			printf("[!] Process crashed. (ExitCode: %d)\n", exitcode);
+			printf("[-] Process crashed. (ExitCode: %d)\n", exitcode);
 			return false;
 		}
 
@@ -113,7 +100,6 @@ bool ManualMap(HANDLE hProcess, BYTE* sourceData, SIZE_T dllSize)
 	}
 
 	VirtualFreeEx(hProcess, shellCode, 0, MEM_RELEASE);
-
 	return true;
 }
 

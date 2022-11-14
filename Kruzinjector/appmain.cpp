@@ -1,25 +1,12 @@
-#include <vector>
-
-#include "Standart.h"
+#include "Utils.h"
+#include "LoadLibrary.h"
 #include "ManualMap.h"
-#include "Bypass.h"
-#include <string>
-#include <sstream>
-#include "rapidxml/rapidxml.hpp"
 
-#ifdef _WIN64
-#define MACHINE_ARC IMAGE_FILE_MACHINE_AMD64
-#else
-#define MACHINE_ARC IMAGE_FILE_MACHINE_I386
-#endif
-
-rapidxml::xml_document<> doc;
-bool isCorrupt = 0;
+using namespace std;
 
 void createAscii()
 {
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 4);
-
 	std::cout << R"(
                                ____                             __ _  __    ____                  
                               / __ \___  ____ ___  _____  _____/ /| |/ /   / __ \___ _   __  
@@ -30,137 +17,54 @@ void createAscii()
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 94);
 }
 
-void customCls()
+void clearCMD()
 {
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 1);
 	system("CLS");
 	createAscii();
 }
 
-/* Gets process id from process name */
-DWORD GetProcessIdByName(const char* ProcessName)
-{
-	PROCESSENTRY32 procEntry;
-	HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-	procEntry.dwSize = sizeof(PROCESSENTRY32);
-	if (Process32First(hSnap, &procEntry))
-	{
-		while (Process32Next(hSnap, &procEntry))
-		{
-			if (!_strcmpi(procEntry.szExeFile, ProcessName))
-			{
-				CloseHandle(hSnap);
-				return procEntry.th32ProcessID;
-			}
-		}
-	}
-
-	CloseHandle(hSnap);
-	return 0;
-}
-
-/* Returns true if the process is an 64-bit process */
-BOOL isWow64bit(HANDLE hProcess)
-{
-	BOOL is64bit = FALSE;
-
-	typedef BOOL(WINAPI* LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
-	LPFN_ISWOW64PROCESS is64bitProcess;
-	is64bitProcess = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
-
-	if (is64bitProcess != NULL && !is64bitProcess(hProcess, &is64bit))
-	{
-		printf("Handle Error..\n");
-		return false;
-	}
-	return is64bit;
-}
-
-/* Checks if the process is a 32-bit process running on 64-bit */
-bool isx86Process(HANDLE hProcess)
-{
-	SYSTEM_INFO systemInfo = { 0 };
-	GetNativeSystemInfo(&systemInfo);
-
-	if (systemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_INTEL)
-	{
-		return true;
-	}
-
-	return isWow64bit(hProcess);
-}
-
-/* Converts text lowercase */
-std::string toLower(std::string string)
-{
-	for (int i = 0; i < string.length(); i++)
-	{
-		string[i] = tolower(string[i]);
-	}
-
-	return string;
-}
-
-/* Xml config functions */
-std::string getSetting(const char* item)
-{
-	rapidxml::xml_node<>* root_node = NULL;
-	root_node = doc.first_node("Settings");
-
-	return root_node->last_node(item)->value();
-}
-
-std::string getSettingSub(const char* item)
-{
-	rapidxml::xml_node<>* root_node = NULL;
-	root_node = doc.first_node("Settings");
-
-	return root_node->last_node("AutoInject")->last_node(item)->value();
-}
-
-std::string getSettingAttr(const char* item, const char* attr)
-{
-	rapidxml::xml_node<>* root_node = NULL;
-	root_node = doc.first_node("Settings");
-
-	return root_node->last_node(item)->first_attribute(attr)->value();
-}
+rapidxml::xml_document<> xmlConfig;
+bool isBrokenConfig;
 
 /* Main inject part */
-bool StartInject(int injectType, const char* injectName, const char* dllFile)
+bool StartInject(const char* injectName, const char* dllFile, INJECTION_TYPE type, EXECUTION_METHOD execution)
 {
-	DWORD PID;
+	DWORD processId;
 	std::ifstream Dll(dllFile, std::ios::binary | std::ios::ate);
 
-	/* Process control part */
-	if (!GetProcessIdByName(injectName))
+	char releativePath[MAX_PATH];
+	GetFullPathNameA(dllFile, MAX_PATH, releativePath, nullptr);
+	dllFile = releativePath;
+
+	processId = GetProcessIdByName(injectName);
+	if (!processId)
 	{
-		printf("[!] Process is not valid. (0x%X)\n", GetLastError());
+		printf("[-] Process is not valid. (0x%X)\n", GetLastError());
 		return false;
 	}
-	PID = GetProcessIdByName(injectName);
 
 	if (!Dll) // Check Dll file is exits
 	{
-		printf("[!] Dll file doesn't exist\n");
+		printf("[-] Dll file doesn't exist\n");
 		return false;
 	}
 	if (Dll.fail()) // Check that there is an openable file
 	{
-		printf("[!] Dll file open failed. (0x%X)\n", (DWORD)Dll.rdstate());
+		printf("[-] Dll file open failed. (0x%X)\n", (DWORD)Dll.rdstate());
 		return false;
 	}
 
 	auto dllSize = Dll.tellg();
 	if (dllSize < 0x1000) // Check file is valid
 	{
-		printf("[!] Invalid dll file size.\n");
+		printf("[-] Invalid dll file size.\n");
 		return false;
 	}
 
 	BYTE* sourceData = new BYTE[(UINT_PTR)dllSize];
 	if (!sourceData) {
-		printf("[!] Dll file can't allocate.\n");
+		printf("[-] Dll file can't allocate.\n");
 		Dll.close();
 		return false;
 	}
@@ -169,9 +73,9 @@ bool StartInject(int injectType, const char* injectName, const char* dllFile)
 	Dll.read(reinterpret_cast<char*>(sourceData), dllSize);
 	Dll.close();
 
-	if (reinterpret_cast<IMAGE_DOS_HEADER*>(sourceData)->e_magic != 0x5A4D) /* Checks MZ */
+	if (reinterpret_cast<IMAGE_DOS_HEADER*>(sourceData)->e_magic != 0x5A4D) // Checks MZ
 	{
-		printf("[!] Invalid dll file.\n");
+		printf("[-] Invalid dll file.\n");
 		return false;
 	}
 
@@ -181,87 +85,60 @@ bool StartInject(int injectType, const char* injectName, const char* dllFile)
 	if (fileHeader->Machine != MACHINE_ARC) // Check injector platform
 	{
 #ifdef _WIN64
-		printf("[!] Invalid platform, use x86 platform!\n");
+		printf("[-] Invalid platform, use x86 platform!\n");
 #else
-		printf("[!] Invalid platform, use x64 platform!\n");
+		printf("[-] Invalid platform, use x64 platform!\n");
 #endif
-		
-		return false;
-	}
-
-	HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-	if (hSnap == INVALID_HANDLE_VALUE)
-	{
-		printf("[!] Failed to Create Snapshot. (0x%X)\n", GetLastError());
-
 		return false;
 	}
 
 	// Checks if the file is injected into the correct process (64-32)
-	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, PID);
-	if (fileHeader->Machine == IMAGE_FILE_MACHINE_AMD64 && isx86Process(hProcess)) 
+	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processId);
+	if (fileHeader->Machine == IMAGE_FILE_MACHINE_AMD64 && IsX86Process(hProcess)) 
 	{
-		printf("[!] You cannot inject 64-bit file into 32-bit application!\n");
-		
+		printf("[-] You cannot inject 64-bit file into 32-bit application!\n");
 		return false;
 	}
-	else if (fileHeader->Machine == IMAGE_FILE_MACHINE_I386 && !isx86Process(hProcess))
+	else if (fileHeader->Machine == IMAGE_FILE_MACHINE_I386 && !IsX86Process(hProcess))
 	{
-		printf("[!] You cannot inject 32-bit file into 64-bit application!\n");
-		
+		printf("[-] You cannot inject 32-bit file into 64-bit application!\n");
 		return false;
 	}
 
-	printf("[*] Injection started..\n");
+	printf("[*] Injection started..\n\n");
+	Sleep(isBrokenConfig ? 500 : stoi(GetSetting("Delay", xmlConfig)));
 
-	if (!isCorrupt)
+	if (type == T_LoadLibrary)
 	{
-		Sleep(stoi(getSetting("Delay")));
+		if (ILoadLibrary(hProcess, dllFile, execution))
+		{
+			printf("[+] Dll file is succesfully injected into game.\n");
+		}
+		else
+		{
+			printf("[-] Something went wrong...\n");
+			CloseHandle(hProcess);
+			return false;
+		}
 	}
-	else
+	else if (type == T_ManualMap)
 	{
-		Sleep(500);
+		if (IManualMap(hProcess, sourceData, dllSize, execution))
+		{
+			printf("[+] Dll file is succesfully injected into game.\n");
+		}
+		else
+		{
+			printf("[-] Something went wrong...\n");
+			CloseHandle(hProcess);
+			return false;
+		}
 	}
 
-	if (injectType == 0)
-	{
-		if (LoadLibraryInject(hProcess, dllFile))
-		{
-			printf("[+] Dll file is succesfully injected into game. (Type: 0, Process ID: %X)\n", PID);
-		}
-		else
-		{
-			printf("[!] Something went wrong...\n");
-			CloseHandle(hProcess);
-			return false;
-		}
-	}
-	else if (injectType == 1)
-	{
-		if (ManualMap(hProcess, sourceData, dllSize))
-		{
-			printf("[+] Dll file is succesfully injected into game. (Type: 1, Process ID: %X)\n", PID);
-		}
-		else
-		{
-			printf("[!] Something went wrong...\n");
-			CloseHandle(hProcess);
-			return false;
-		}
-	}
-	else if (injectType == 2)
-	{
-		if (BypassInject(hProcess, dllFile))
-		{
-			printf("[+] Dll file is succesfully injected into game. (Type: 2, Process ID: %X)\n", PID);
-		}
-		else
-		{
-			printf("[!] Something went wrong...\n");
-			CloseHandle(hProcess);
-			return false;
-		}
-	}
+	printf("[*] Injection Type: %i\n", type);
+	printf("[*] Execution Method: %i\n", execution);
+	printf("[*] Process ID: %i\n", processId);
+
 	CloseHandle(hProcess);
 	delete[] sourceData;
 
@@ -273,71 +150,88 @@ int main()
 	std::string injectName = "";
 	std::string dllFile = "";
 	std::string advancedOptions;
-	int injectType = 1;
+	int injectType = 0;
+	int executionMethod = 0;
 
-	SetConsoleTitle("DLL INJECTOR | Kruzinjector v1.0");
-
+	SetConsoleTitle("DLL INJECTOR | Kruzinjector v1.1");
 	createAscii();
 
+	// Config Part
 	std::ifstream xmlFile("settings.xml");
 	std::vector<char> buffer((std::istreambuf_iterator<char>(xmlFile)), std::istreambuf_iterator<char>());
 	buffer.push_back('\0');
 	if (xmlFile.fail())
 	{
-		printf("[*] Config file can't opened!\n");
-		isCorrupt = 1;
+		isBrokenConfig = true;
+	}
+	else
+	{
+		try
+		{
+			xmlConfig.parse<0>(&buffer[0]);
+		}
+		catch (...)
+		{
+			printf("[*] Config file is corrupt!\n");
+			isBrokenConfig = true;
+		}
 	}
 	xmlFile.close();
 
-	try
-	{
-		doc.parse<0>(&buffer[0]);
-	}
-	catch (...)
-	{
-		printf("[*] Config file is corrupt!\n");
-		isCorrupt = 1;
-	}
-
 	// If Auto Inject enabled, automatically start injection part
-	if (!isCorrupt)
+	if (!isBrokenConfig)
 	{
-		if (getSettingAttr("AutoInject", "enabled") == "true")
+		int IType = stoi(GetSubSetting("InjectionType", xmlConfig));
+		int IMethod = atoi(GetSubSetting("ExecutionMethod", xmlConfig));
+		const char* PName = GetSubSetting("ProcessName", xmlConfig);
+		const char* IFile = GetSubSetting("InjectionFile", xmlConfig);
+
+		if (strcmp(GetAttrSetting("AutoInject", "enabled", xmlConfig), "true") == 0)
 		{
-			if (!(getSettingSub("IType") == "0" || getSettingSub("IType") == "1" || getSettingSub("IType") == "2"))
+			if (IType != 0 && IType != 1)
 			{
-				customCls();
-				printf("[*] CONFIG: Invalid Injection Type...\n");
+				clearCMD();
+				printf("[-] CONFIG: Invalid Injection Type...\n");
 				system("PAUSE");
 				return 0;
 			}
 
-			StartInject(stoi(getSettingSub("IType")), getSettingSub("ProcessName").c_str(), getSettingSub("IFile").c_str());
+			StartInject(PName, IFile, (INJECTION_TYPE)IType, (EXECUTION_METHOD)IMethod);
 			system("PAUSE");
 			return 0;
 		}
 	}
 
-	printf("Process Name: ");
+
+	printf("\n[*] Process Name: \n> ");
 	std::cin >> injectName;
 
-	printf("\n- 0: Standart\n- 1: Manual Mapping\n- 2: Load Library Bypass\n");
-	printf("Select Injection Type: ");
+	printf("\n[*] Choose injection type. (0: LoadLibrary, 1: ManualMap)\n> ");
 	std::cin >> injectType;
 
-	if (!std::cin >> injectType || !(injectType == 0 || injectType == 1 || injectType == 2))
+	printf("\n[*] Choose execution method. (0: CreateThreadEx, 1: ThreadHijacking)\n> ");
+	std::cin >> executionMethod;
+
+	if (!std::cin >> injectType || !(injectType == 0 || injectType == 1))
 	{
-		customCls();
-		printf("[*] Invalid Injection Type.\n");
+		clearCMD();
+		printf("[-] Invalid injection type.\n");
 		return 0;
 	}
 
-	printf("\nSelect Dll File: ");
+	if (!std::cin >> executionMethod || !(executionMethod == 0 || executionMethod == 1))
+	{
+		clearCMD();
+		printf("[-] Invalid execution method.\n");
+		return 0;
+	}
+
+	printf("\n[*] DLL File Path: \n> ");
 	std::cin >> dllFile;
 
-	customCls();
+	clearCMD();
 
-	StartInject(injectType, injectName.c_str(), dllFile.c_str());
+	StartInject(injectName.c_str(), dllFile.c_str(), (INJECTION_TYPE)injectType, (EXECUTION_METHOD)executionMethod);
 
 	system("PAUSE");
 	return 0;

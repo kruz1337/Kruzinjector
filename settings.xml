@@ -1,9 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Settings>
 	<AutoInject enabled="true">
-		<IType>1</IType> <!-- 0: LoadLibrary | 1: ManualMap | 2: VACBypass -->
 		<ProcessName>cmd.exe</ProcessName>
-		<IFile>hello-world-x64.dll</IFile>
+		<InjectionFile>hello-world-x64.dll</InjectionFile>
+		<InjectionType>0</InjectionType>
+		<ExecutionMethod>0</ExecutionMethod>
 	</AutoInject>
 	<Delay>500</Delay>
 </Settings>
